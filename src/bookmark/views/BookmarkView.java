@@ -50,6 +50,7 @@ public class BookmarkView extends ViewPart {
 	private DrillDownAdapter drillDownAdapter;
 	private Action action1;
 	private Action action2;
+	private Action action3;
 	private Action doubleClickAction;
 
 	/*
@@ -135,10 +136,24 @@ public class BookmarkView extends ViewPart {
 			}
 			return new Object[0];
 		}
+		public TreeParent getInvisibleRoot() {
+			return this.invisibleRoot;
+		}
 		public boolean hasChildren(Object parent) {
 			if (parent instanceof TreeParent)
 				return ((TreeParent)parent).hasChildren();
 			return false;
+		}
+		public void addChildren(Object parent, Object child) {
+			/**
+			 * add child object to parent
+			 */
+			if (parent instanceof TreeParent) {
+				((TreeParent)parent).addChild((TreeObject)child);
+			}
+		}
+		public void setInvisibleRoot(Object invisibleRoot) {
+			this.invisibleRoot = (TreeParent)invisibleRoot;
 		}
 /*
  * We will set up a dummy model to initialize tree heararchy.
@@ -242,13 +257,18 @@ public class BookmarkView extends ViewPart {
 	}
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
+		/**
+		 * add actions to tool bar
+		 */
 		manager.add(action1);
 		manager.add(action2);
+		manager.add(action3);
 		manager.add(new Separator());
 		drillDownAdapter.addNavigationActions(manager);
 	}
 	
 	private void makeActions() {
+		// get active file info action
 		action1 = new Action() {
 			public void run() {
 				//showMessage("Action 1 executed");
@@ -278,11 +298,12 @@ public class BookmarkView extends ViewPart {
 		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
+		// open file in editor action
 		action2 = new Action() {
 			public void run() {
 				//showMessage("Action 2 executed");
 				System.out.println("Action 2 executed");
-				String absolutePath = "/Users/han.zhou/runtime-EclipseApplication/test/src/test.java";
+				//String absolutePath = "/Users/han.zhou/runtime-EclipseApplication/test/src/test.java";
 				String relativePath = "src/test.java";
 				IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 				IProject project = workspaceRoot.getProject("test");
@@ -317,6 +338,29 @@ public class BookmarkView extends ViewPart {
 		action2.setToolTipText("Action 2 tooltip");
 		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		
+		// add directory and leaf action
+		action3 = new Action() {
+			public void run() {
+				ViewContentProvider viewContentProvider = (ViewContentProvider)viewer.getContentProvider();
+				TreeParent invisibleRoot = viewContentProvider.getInvisibleRoot();
+				TreeObject child = new TreeObject("new node");
+				
+				TreeParent parent = new TreeParent("new parent");
+				
+				invisibleRoot.addChild(child);
+				invisibleRoot.addChild(parent);
+				
+				viewContentProvider.setInvisibleRoot(invisibleRoot);
+				viewer.setContentProvider(viewContentProvider);
+			}
+		};
+		action3.setText("Action 3");
+		action3.setToolTipText("Action 3 tooltip");
+		action3.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		
+		// double click action
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
