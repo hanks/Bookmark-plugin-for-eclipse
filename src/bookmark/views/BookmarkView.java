@@ -52,6 +52,7 @@ public class BookmarkView extends ViewPart {
 	private Action action2;
 	private Action action3;
 	private Action action4;
+	private Action action5;
 	private Action doubleClickAction;
 
 	/*
@@ -110,6 +111,9 @@ public class BookmarkView extends ViewPart {
 		}
 		public boolean hasChildren() {
 			return children.size()>0;
+		}
+		public void updateChild(TreeObject child, int childId) {
+			
 		}
 	}
 
@@ -268,6 +272,7 @@ public class BookmarkView extends ViewPart {
 		manager.add(action2);
 		manager.add(action3);
 		manager.add(action4);
+		manager.add(action5);
 		manager.add(new Separator());
 		drillDownAdapter.addNavigationActions(manager);
 	}
@@ -387,12 +392,81 @@ public class BookmarkView extends ViewPart {
 		action4.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
-		// double click action
+		// add book mark to selected parent
+		action5 = new Action() {
+			public void run() {
+				ISelection selection = viewer.getSelection();
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				if (obj == null) {
+					showMessage("Please select an bookmark folder.");
+				} else {
+					TreeObject treeObject = (TreeObject)obj;
+					String nodeName = "";
+					if (treeObject.flag == 0) {
+						// child
+						nodeName = treeObject.getParent().getName();
+					} else {
+						// parent
+						nodeName = treeObject.getName();
+					}
+					
+					//get active editor info
+					String relativePath = "";
+					String projectName = "";
+					
+					IWorkbench wb = PlatformUI.getWorkbench();
+					IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+					IWorkbenchPage page = window.getActivePage();
+					IEditorPart editor = page.getActiveEditor();
+					if (editor != null) {
+						IFileEditorInput input = (IFileEditorInput)editor.getEditorInput();
+						IFile file = input.getFile();
+						relativePath = file.getProjectRelativePath().toOSString();
+						projectName = file.getProject().getName();
+					} else {
+						System.out.println("no active editor");
+					}
+					
+					// create leaf with file info
+					ViewContentProvider viewContentProvider = (ViewContentProvider)viewer.getContentProvider();
+					TreeParent invisibleRoot = viewContentProvider.getInvisibleRoot();
+					TreeObject child = new TreeObject(relativePath);	
+					
+					
+					invisibleRoot.addChild(child);
+					
+					viewContentProvider.setInvisibleRoot(invisibleRoot);
+					viewer.setContentProvider(viewContentProvider);
+				}
+			}
+		};
+		action5.setText("Action 5");
+		action5.setToolTipText("Action 5 tooltip");
+		action5.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		
+		// double click action to open file
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				showMessage("Double-click detected on "+obj.toString());
+				//showMessage("Double-click detected on "+obj.toString());
+				if (obj != null) {
+					TreeObject treeObject = (TreeObject)obj;
+					String relativePath = treeObject.getName();
+                    IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+                    IProject project = workspaceRoot.getProject("test"); 
+                    IFile file1 = project.getFile((new Path(relativePath)));
+                    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                    IWorkbenchPage page = window.getActivePage(); 
+                    IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file1.getName());
+
+					try {
+					    page.openEditor(new FileEditorInput(file1), desc.getId()); //使用page来打开编辑器，需要传入文件对象，编辑器id
+					} catch (PartInitException e) {
+					  e.printStackTrace();
+					}
+				}
 			}
 		};
 	}
