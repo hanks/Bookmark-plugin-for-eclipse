@@ -51,6 +51,7 @@ public class BookmarkView extends ViewPart {
 	private Action action1;
 	private Action action2;
 	private Action action3;
+	private Action action4;
 	private Action doubleClickAction;
 
 	/*
@@ -66,9 +67,11 @@ public class BookmarkView extends ViewPart {
 	class TreeObject implements IAdaptable {
 		private String name;
 		private TreeParent parent;
+		protected int flag;
 		
 		public TreeObject(String name) {
 			this.name = name;
+			this.flag = 0;
 		}
 		public String getName() {
 			return name;
@@ -91,6 +94,7 @@ public class BookmarkView extends ViewPart {
 		private ArrayList<TreeObject> children;
 		public TreeParent(String name) {
 			super(name);
+			this.flag = 1;
 			children = new ArrayList<TreeObject>();
 		}
 		public void addChild(TreeObject child) {
@@ -263,6 +267,7 @@ public class BookmarkView extends ViewPart {
 		manager.add(action1);
 		manager.add(action2);
 		manager.add(action3);
+		manager.add(action4);
 		manager.add(new Separator());
 		drillDownAdapter.addNavigationActions(manager);
 	}
@@ -358,6 +363,28 @@ public class BookmarkView extends ViewPart {
 		action3.setText("Action 3");
 		action3.setToolTipText("Action 3 tooltip");
 		action3.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		
+		// add detect selection action
+		action4 = new Action() {
+			public void run() {
+				ISelection selection = viewer.getSelection();
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				if (obj == null) {
+					System.out.println("no selection");
+				} else {
+				    TreeObject a = (TreeObject)obj;
+				    if (a.flag == 0) {
+				    	System.out.println("leaf: " + a.toString());
+				    } else {
+				    	System.out.println("parent: " + a.toString());
+				    }
+				}
+			}
+		};
+		action4.setText("Action 4");
+		action4.setToolTipText("Action 4 tooltip");
+		action4.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
 		// double click action
