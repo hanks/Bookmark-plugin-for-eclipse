@@ -4,7 +4,12 @@ import java.util.ArrayList;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
+import org.eclipse.jface.util.DelegatingDragAdapter;
+import org.eclipse.jface.util.TransferDragSourceListener;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -228,6 +233,36 @@ public class BookmarkView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
+		
+		// add drop feature in tree 
+		DelegatingDragAdapter dragAdapter = new DelegatingDragAdapter();
+        dragAdapter.addDragSourceListener(new TransferDragSourceListener() {
+			@Override
+			public void dragStart(DragSourceEvent event) {
+				// TODO Auto-generated method stub
+				System.out.println("Drag start");
+			}
+
+			@Override
+			public void dragSetData(DragSourceEvent event) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void dragFinished(DragSourceEvent event) {
+				// TODO Auto-generated method stub
+				System.out.println("Drag end");
+			}
+
+			@Override
+			public Transfer getTransfer() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+        });
+        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, 
+            dragAdapter.getTransfers(), dragAdapter);
 	}
 
 	private void hookContextMenu() {
