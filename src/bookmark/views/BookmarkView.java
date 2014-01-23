@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.ui.part.FileEditorInput;
