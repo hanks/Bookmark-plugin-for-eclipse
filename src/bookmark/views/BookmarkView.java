@@ -20,11 +20,13 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.core.resources.IFile; 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.service.prefs.BackingStoreException;
@@ -38,6 +40,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import org.eclipse.jdt.core.ICompilationUnit;
 
 /*
  * The content provider class is responsible for
@@ -479,14 +482,36 @@ public class BookmarkView extends ViewPart {
 				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
 				IWorkbenchPage page = window.getActivePage();
 				IEditorPart editor = page.getActiveEditor();
+				
 				if (editor != null) {
 					IFileEditorInput input = (IFileEditorInput)editor.getEditorInput();
 					IFile file = input.getFile();
 					relativePath = file.getProjectRelativePath().toOSString();
 					projectName = file.getProject().getName();
 				} else {
-					showMessage("no active editor");
-					return ;
+					// check selection from package explorer 
+					ISelectionService service = getSite().getWorkbenchWindow()
+							.getSelectionService();
+					IStructuredSelection package_exploer_selection = (IStructuredSelection) service
+							.getSelection("org.eclipse.jdt.ui.PackageExplorer");
+					if (package_exploer_selection != null) {
+						Object obj = package_exploer_selection.getFirstElement();
+						if (obj == null) {
+							showMessage("No selection in package explorer");
+						} else {
+							// get file info for selection from package explorer
+							IResource resource = ((ICompilationUnit)obj).getResource();
+							
+							if (resource.getType() == IResource.FILE) {
+							    IFile ifile = (IFile) resource;
+							    relativePath = ifile.getProjectRelativePath().toOSString();
+								projectName = ifile.getProject().getName();
+							}
+						}
+					} else {
+						showMessage("No active editor or selection in package explorer");
+						return ;
+					}
 				}
 				
 				// create leaf with file info
@@ -544,7 +569,7 @@ public class BookmarkView extends ViewPart {
                     IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file1.getName());
 
 					try {
-					    page.openEditor(new FileEditorInput(file1), desc.getId()); //使用page来打开编辑器，需要传入文件对象，编辑器id
+					    page.openEditor(new FileEditorInput(file1), desc.getId()); 
 					} catch (PartInitException e) {
 					  e.printStackTrace();
 					}
