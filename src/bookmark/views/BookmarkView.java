@@ -33,6 +33,189 @@ import org.osgi.service.prefs.Preferences;
 
 import com.google.gson.Gson;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+/*
+ * The content provider class is responsible for
+ * providing objects to the view. It can wrap
+ * existing objects in adapters or simply return
+ * objects as-is. These objects may be sensitive
+ * to the current input of the view, or ignore
+ * it and always show the same content 
+ * (like Task List, for example).
+ */
+ 
+class TreeObject implements IAdaptable, Serializable {
+	private static final long serialVersionUID = -4275221961856278045L;
+	public static final int PARENT = 1;
+	public static final int CHILD = 0;
+	private String name;
+	private TreeParent parent;
+	protected int flag;
+	private String projectName;
+	
+	public TreeObject(String name) {
+		this.name = name;
+		this.flag = CHILD;
+		this.projectName = "";
+	}
+	
+	public TreeObject(String name, String projectName) {
+		this.name = name;
+		this.flag = CHILD;
+		this.projectName = projectName;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getProjectName() {
+		return this.projectName;
+	}
+	
+	public void setParent(TreeParent parent) {
+		this.parent = parent;
+	}
+	
+	public TreeParent getParent() {
+		return parent;
+	}
+	
+	public String toString() {
+		return getName();
+	}
+	
+	/**
+	 * Override equals method to use name to compare two TreeObject
+	 */
+	public boolean equals(Object object) {
+		if ((object instanceof TreeObject) && ((TreeObject) object).getName() == this.getName()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public Object getAdapter(Class key) {
+		return null;
+	}
+}
+
+class TreeParent extends TreeObject {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1850997564183666463L;
+	private ArrayList<TreeObject> children;
+	
+	public TreeParent(String name) {
+		super(name);
+		this.flag = PARENT;
+		children = new ArrayList<TreeObject>();
+	}
+	
+	public void addChild(TreeObject child) {
+		children.add(child);
+		child.setParent(this);
+	}
+	
+	public void removeChild(TreeObject child) {
+		children.remove(child);
+		child.setParent(null);
+	}
+	
+	/**
+	 * 
+	 * @return TreeObject list or TreeObject[] when no children
+	 */
+	public TreeObject [] getChildren() {
+		return (TreeObject [])children.toArray(new TreeObject[children.size()]);	
+	}
+	
+	public boolean hasChildren() {
+		return children.size()>0;
+	}
+	
+	/**
+	 * Add child to specified target node
+	 * 
+	 * Use recursion way to add child, if child is leaf, to find his parent and add to its parent
+	 * 
+	 * @param obj
+	 * @param path
+	 */
+	public boolean addChild(TreeObject target, TreeObject child) {
+		TreeObject[] children = this.getChildren();
+		for (int i = 0; i < children.length; i++) {
+			if (children[i].flag == PARENT) {
+				// if target is folder
+				if (target == children[i]) {
+					// insert child
+					((TreeParent)children[i]).addChild(child);
+					return true;
+				}
+				
+				boolean is_ok = ((TreeParent)children[i]).addChild(target, child);
+				
+				if (is_ok) {
+					return true;
+				} 
+			} else if (children[i].flag == CHILD) {
+				if (children[i] == target) {
+					TreeParent parent = children[i].getParent();
+					if (parent.getParent() != null) {
+						parent.getParent().addChild(parent, child);	
+					} else { // when it is invisibleRoot, so there is 
+						     // no parent, directly to add
+						parent.addChild(child);
+					}
+					return true;
+				} 
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove child from target node
+	 * @param target
+	 * @return true when remove successfully or else false
+	 */
+	public boolean removeSelectedChild(TreeObject target) {
+		TreeObject[] children = this.getChildren();
+		for (int i = 0; i < children.length; i++) {
+			if (children[i].flag == PARENT) {
+				// if target is folder
+				if (target == children[i]) {
+					// delete child
+					this.removeChild(target);
+					return true;
+				}
+				
+				boolean is_ok = ((TreeParent)children[i]).removeSelectedChild(target);
+				
+				if (is_ok) {
+					return true;
+				} 
+			} else if (children[i].flag == CHILD) {
+				if (children[i] == target) {
+					TreeParent parent = children[i].getParent();
+					parent.removeChild(target);
+					return true;
+				} 
+			}
+		}
+		return false;
+	}
+}
+
 /**
  * This sample class demonstrates how to plug-in a new
  * workbench view. The view shows data obtained from the
@@ -58,8 +241,6 @@ public class BookmarkView extends ViewPart {
 	 */
 	public static final String ID = "bookmark.views.BookmarkView";
 	public static final String DATA_STORE_KEY = "bookmark_datasource";
-	public static final int PARENT = 1;
-	public static final int CHILD = 0;
 
 	private TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
@@ -70,173 +251,6 @@ public class BookmarkView extends ViewPart {
 	private Action action5;
 	private Action doubleClickAction;
 
-	/*
-	 * The content provider class is responsible for
-	 * providing objects to the view. It can wrap
-	 * existing objects in adapters or simply return
-	 * objects as-is. These objects may be sensitive
-	 * to the current input of the view, or ignore
-	 * it and always show the same content 
-	 * (like Task List, for example).
-	 */
-	 
-	class TreeObject implements IAdaptable {
-		private String name;
-		private TreeParent parent;
-		protected int flag;
-		private String projectName;
-		
-		public TreeObject(String name) {
-			this.name = name;
-			this.flag = CHILD;
-			this.projectName = "";
-		}
-		
-		public TreeObject(String name, String projectName) {
-			this.name = name;
-			this.flag = CHILD;
-			this.projectName = projectName;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		public String getProjectName() {
-			return this.projectName;
-		}
-		
-		public void setParent(TreeParent parent) {
-			this.parent = parent;
-		}
-		
-		public TreeParent getParent() {
-			return parent;
-		}
-		
-		public String toString() {
-			return getName();
-		}
-		
-		/**
-		 * Override equals method to use name to compare two TreeObject
-		 */
-		public boolean equals(Object object) {
-			if ((object instanceof TreeObject) && ((TreeObject) object).getName() == this.getName()) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		
-		public Object getAdapter(Class key) {
-			return null;
-		}
-	}
-	
-	class TreeParent extends TreeObject {
-		private ArrayList<TreeObject> children;
-		
-		public TreeParent(String name) {
-			super(name);
-			this.flag = PARENT;
-			children = new ArrayList<TreeObject>();
-		}
-		
-		public void addChild(TreeObject child) {
-			children.add(child);
-			child.setParent(this);
-		}
-		
-		public void removeChild(TreeObject child) {
-			children.remove(child);
-			child.setParent(null);
-		}
-		
-		/**
-		 * 
-		 * @return TreeObject list or TreeObject[] when no children
-		 */
-		public TreeObject [] getChildren() {
-    		return (TreeObject [])children.toArray(new TreeObject[children.size()]);	
-		}
-		
-		public boolean hasChildren() {
-			return children.size()>0;
-		}
-		
-		/**
-		 * Add child to specified target node
-		 * 
-		 * Use recursion way to add child, if child is leaf, to find his parent and add to its parent
-		 * 
-		 * @param obj
-		 * @param path
-		 */
-		public boolean addChild(TreeObject target, TreeObject child) {
-			TreeObject[] children = this.getChildren();
-			for (int i = 0; i < children.length; i++) {
-				if (children[i].flag == PARENT) {
-					// if target is folder
-					if (target == children[i]) {
-						// insert child
-						((TreeParent)children[i]).addChild(child);
-						return true;
-					}
-					
-					boolean is_ok = ((TreeParent)children[i]).addChild(target, child);
-					
-					if (is_ok) {
-						return true;
-					} 
-				} else if (children[i].flag == CHILD) {
-					if (children[i] == target) {
-						TreeParent parent = children[i].getParent();
-						if (parent.getParent() != null) {
-							parent.getParent().addChild(parent, child);	
-						} else { // when it is invisibleRoot, so there is 
-							     // no parent, directly to add
-							parent.addChild(child);
-						}
-						return true;
-					} 
-				}
-			}
-			return false;
-		}
-		
-		/**
-		 * Remove child from target node
-		 * @param target
-		 * @return true when remove successfully or else false
-		 */
-		public boolean removeSelectedChild(TreeObject target) {
-			TreeObject[] children = this.getChildren();
-			for (int i = 0; i < children.length; i++) {
-				if (children[i].flag == PARENT) {
-					// if target is folder
-					if (target == children[i]) {
-						// delete child
-						this.removeChild(target);
-						return true;
-					}
-					
-					boolean is_ok = ((TreeParent)children[i]).removeSelectedChild(target);
-					
-					if (is_ok) {
-						return true;
-					} 
-				} else if (children[i].flag == CHILD) {
-					if (children[i] == target) {
-						TreeParent parent = children[i].getParent();
-						parent.removeChild(target);
-						return true;
-					} 
-				}
-			}
-			return false;
-		}
-	}
 
 	class ViewContentProvider implements IStructuredContentProvider, 
 										   ITreeContentProvider {
@@ -654,7 +668,22 @@ public class BookmarkView extends ViewPart {
 		
 		// change object to string
 		Gson gson = new Gson();
-		String json_str = gson.toJson(dataSource);
+		
+		// change object byte array
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+        ObjectOutputStream o;
+		try {
+			o = new ObjectOutputStream(b);
+			o.writeObject(dataSource);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        byte[] byteDataArray = b.toByteArray();
+		
+        // use gson to change byte array to string
+		String json_str = gson.toJson(byteDataArray);
 		
 		prefs.put(DATA_STORE_KEY, json_str);
 		try {
@@ -669,6 +698,13 @@ public class BookmarkView extends ViewPart {
 		Preferences prefs = InstanceScope.INSTANCE
 				  .getNode(ID);
 		
+//		try {
+//			prefs.clear();
+//		} catch (BackingStoreException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
 		String json_str = prefs.get(DATA_STORE_KEY, "");
 		
 		if (json_str == "") {
@@ -677,8 +713,23 @@ public class BookmarkView extends ViewPart {
 			return invisibleRoot;
 		} else {
 			Gson gson = new Gson();
-			TreeParent obj = gson.fromJson(json_str, TreeParent.class);
-			return obj;
+			byte[] byteDataArray = gson.fromJson(json_str, byte[].class);
+			
+			// deserialize object from byteDataArray
+			ByteArrayInputStream b = new ByteArrayInputStream(byteDataArray);
+	        ObjectInputStream o;
+	        TreeParent invisibleRoot = null;
+			try {
+				o = new ObjectInputStream(b);
+		        invisibleRoot = (TreeParent)o.readObject();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return invisibleRoot;
 		}
 	}
 }
