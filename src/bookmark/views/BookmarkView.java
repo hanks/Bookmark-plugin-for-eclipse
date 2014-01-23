@@ -160,7 +160,7 @@ public class BookmarkView extends ViewPart {
 		}
 		
 		/**
-		 * Return index path for object, almost to find parent index path
+		 * Add child to specified target node
 		 * 
 		 * Use recursion way to add child, if child is leaf, to find his parent and add to its parent
 		 * 
@@ -178,9 +178,9 @@ public class BookmarkView extends ViewPart {
 						return true;
 					}
 					
-					boolean can_add = ((TreeParent)children[i]).addChild(target, child);
+					boolean is_ok = ((TreeParent)children[i]).addChild(target, child);
 					
-					if (can_add) {
+					if (is_ok) {
 						return true;
 					} 
 				} else if (children[i].flag == CHILD) {
@@ -192,6 +192,38 @@ public class BookmarkView extends ViewPart {
 							     // no parent, directly to add
 							parent.addChild(child);
 						}
+						return true;
+					} 
+				}
+			}
+			return false;
+		}
+		
+		/**
+		 * Remove child from target node
+		 * @param target
+		 * @return true when remove successfully or else false
+		 */
+		public boolean removeSelectedChild(TreeObject target) {
+			TreeObject[] children = this.getChildren();
+			for (int i = 0; i < children.length; i++) {
+				if (children[i].flag == PARENT) {
+					// if target is folder
+					if (target == children[i]) {
+						// delete child
+						this.removeChild(target);
+						return true;
+					}
+					
+					boolean is_ok = ((TreeParent)children[i]).removeSelectedChild(target);
+					
+					if (is_ok) {
+						return true;
+					} 
+				} else if (children[i].flag == CHILD) {
+					if (children[i] == target) {
+						TreeParent parent = children[i].getParent();
+						parent.removeChild(target);
 						return true;
 					} 
 				}
@@ -440,7 +472,27 @@ public class BookmarkView extends ViewPart {
 		// add directory and leaf action
 		action3 = new Action() {
 			public void run() {
-				System.out.println("empty");
+				// get invisibleRoot
+				TreeParent invisibleRoot = (TreeParent)viewer.getInput();
+				
+				// get selection
+				ISelection selection = viewer.getSelection();
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				if (obj == null) {
+					showMessage("No selection in Bookmark View.");
+				} else {
+					TreeObject target = (TreeObject)obj;
+					// confirm dialog
+					String title = "Confirm";
+					String question = "Do you really want to delelte this whole node?";
+					boolean answer = MessageDialog.openConfirm(null, title, question);
+					if (answer) {
+						invisibleRoot.removeSelectedChild(target);	
+					} 
+				}
+				
+				// update data source
+				viewer.setInput(invisibleRoot);
 			}
 		};
 		action3.setText("Action 3");
