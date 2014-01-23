@@ -81,18 +81,23 @@ public class BookmarkView extends ViewPart {
 			this.name = name;
 			this.flag = CHILD;
 		}
+		
 		public String getName() {
 			return name;
 		}
+		
 		public void setParent(TreeParent parent) {
 			this.parent = parent;
 		}
+		
 		public TreeParent getParent() {
 			return parent;
 		}
+		
 		public String toString() {
 			return getName();
 		}
+		
 		public Object getAdapter(Class key) {
 			return null;
 		}
@@ -106,22 +111,23 @@ public class BookmarkView extends ViewPart {
 			this.flag = PARENT;
 			children = new ArrayList<TreeObject>();
 		}
+		
 		public void addChild(TreeObject child) {
 			children.add(child);
 			child.setParent(this);
 		}
+		
 		public void removeChild(TreeObject child) {
 			children.remove(child);
 			child.setParent(null);
 		}
+		
 		public TreeObject [] getChildren() {
-			return (TreeObject [])children.toArray(new TreeObject[children.size()]);
+    		return (TreeObject [])children.toArray(new TreeObject[children.size()]);	
 		}
+		
 		public boolean hasChildren() {
 			return children.size()>0;
-		}
-		public void updateChild(TreeObject child, int childId) {
-			
 		}
 	}
 
@@ -152,40 +158,6 @@ public class BookmarkView extends ViewPart {
 				return ((TreeParent)parent).hasChildren();
 			return false;
 		}
-		public void addChildren(Object parent, Object child) {
-			/**
-			 * add child object to parent
-			 */
-			if (parent instanceof TreeParent) {
-				((TreeParent)parent).addChild((TreeObject)child);
-			}
-		}
-
-/*
- * We will set up a dummy model to initialize tree heararchy.
- * In a real code, you will connect to a real model and
- * expose its hierarchy.
- */
-//		private void initialize() {
-//			TreeObject to1 = new TreeObject("Leaf 1");
-//			TreeObject to2 = new TreeObject("Leaf 2");
-//			TreeObject to3 = new TreeObject("Leaf 3");
-//			TreeParent p1 = new TreeParent("Parent 1");
-//			p1.addChild(to1);
-//			p1.addChild(to2);
-//			p1.addChild(to3);
-//			
-//			TreeObject to4 = new TreeObject("Leaf 4");
-//			TreeParent p2 = new TreeParent("Parent 2");
-//			p2.addChild(to4);
-//			
-//			TreeParent root = new TreeParent("Root");
-//			root.addChild(p1);
-//			root.addChild(p2);
-//			
-//			invisibleRoot = new TreeParent("");
-//			invisibleRoot.addChild(root);
-//		}
 	}
 	class ViewLabelProvider extends LabelProvider {
 
@@ -428,6 +400,7 @@ public class BookmarkView extends ViewPart {
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
 				if (obj == null) {
 					showMessage("Please select an bookmark folder.");
+					return ;
 				} else {
 					TreeObject treeObject = (TreeObject)obj;
 					String nodeName = "";
@@ -453,7 +426,8 @@ public class BookmarkView extends ViewPart {
 						relativePath = file.getProjectRelativePath().toOSString();
 						projectName = file.getProject().getName();
 					} else {
-						System.out.println("no active editor");
+						showMessage("no active editor");
+						return ;
 					}
 					
 					// create leaf with file info
