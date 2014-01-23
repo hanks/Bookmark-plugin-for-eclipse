@@ -50,6 +50,8 @@ public class BookmarkView extends ViewPart {
 	 * The ID of the view as specified by the extension.
 	 */
 	public static final String ID = "bookmark.views.BookmarkView";
+	public static final int PARENT = 1;
+	public static final int CHILD = 0;
 
 	private TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
@@ -77,7 +79,7 @@ public class BookmarkView extends ViewPart {
 		
 		public TreeObject(String name) {
 			this.name = name;
-			this.flag = 0;
+			this.flag = CHILD;
 		}
 		public String getName() {
 			return name;
@@ -98,9 +100,10 @@ public class BookmarkView extends ViewPart {
 	
 	class TreeParent extends TreeObject {
 		private ArrayList<TreeObject> children;
+		
 		public TreeParent(String name) {
 			super(name);
-			this.flag = 1;
+			this.flag = PARENT;
 			children = new ArrayList<TreeObject>();
 		}
 		public void addChild(TreeObject child) {
@@ -124,17 +127,12 @@ public class BookmarkView extends ViewPart {
 
 	class ViewContentProvider implements IStructuredContentProvider, 
 										   ITreeContentProvider {
-		private TreeParent invisibleRoot;
 
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		}
 		public void dispose() {
 		}
 		public Object[] getElements(Object parent) {
-			if (parent.equals(getViewSite())) {
-				if (invisibleRoot==null) initialize();
-				return getChildren(invisibleRoot);
-			}
 			return getChildren(parent);
 		}
 		public Object getParent(Object child) {
@@ -149,9 +147,6 @@ public class BookmarkView extends ViewPart {
 			}
 			return new Object[0];
 		}
-		public TreeParent getInvisibleRoot() {
-			return this.invisibleRoot;
-		}
 		public boolean hasChildren(Object parent) {
 			if (parent instanceof TreeParent)
 				return ((TreeParent)parent).hasChildren();
@@ -165,34 +160,32 @@ public class BookmarkView extends ViewPart {
 				((TreeParent)parent).addChild((TreeObject)child);
 			}
 		}
-		public void setInvisibleRoot(Object invisibleRoot) {
-			this.invisibleRoot = (TreeParent)invisibleRoot;
-		}
+
 /*
  * We will set up a dummy model to initialize tree heararchy.
  * In a real code, you will connect to a real model and
  * expose its hierarchy.
  */
-		private void initialize() {
-			TreeObject to1 = new TreeObject("Leaf 1");
-			TreeObject to2 = new TreeObject("Leaf 2");
-			TreeObject to3 = new TreeObject("Leaf 3");
-			TreeParent p1 = new TreeParent("Parent 1");
-			p1.addChild(to1);
-			p1.addChild(to2);
-			p1.addChild(to3);
-			
-			TreeObject to4 = new TreeObject("Leaf 4");
-			TreeParent p2 = new TreeParent("Parent 2");
-			p2.addChild(to4);
-			
-			TreeParent root = new TreeParent("Root");
-			root.addChild(p1);
-			root.addChild(p2);
-			
-			invisibleRoot = new TreeParent("");
-			invisibleRoot.addChild(root);
-		}
+//		private void initialize() {
+//			TreeObject to1 = new TreeObject("Leaf 1");
+//			TreeObject to2 = new TreeObject("Leaf 2");
+//			TreeObject to3 = new TreeObject("Leaf 3");
+//			TreeParent p1 = new TreeParent("Parent 1");
+//			p1.addChild(to1);
+//			p1.addChild(to2);
+//			p1.addChild(to3);
+//			
+//			TreeObject to4 = new TreeObject("Leaf 4");
+//			TreeParent p2 = new TreeParent("Parent 2");
+//			p2.addChild(to4);
+//			
+//			TreeParent root = new TreeParent("Root");
+//			root.addChild(p1);
+//			root.addChild(p2);
+//			
+//			invisibleRoot = new TreeParent("");
+//			invisibleRoot.addChild(root);
+//		}
 	}
 	class ViewLabelProvider extends LabelProvider {
 
@@ -204,6 +197,8 @@ public class BookmarkView extends ViewPart {
 			if (obj instanceof TreeParent)
 			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
 			return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
+			// if need to change customize image
+			// return new Image(null, new FileInputStream("images/file.gif"));
 		}
 	}
 	class NameSorter extends ViewerSorter {
@@ -225,7 +220,16 @@ public class BookmarkView extends ViewPart {
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
-		viewer.setInput(getViewSite());
+		//viewer.setInput(getViewSite());
+		// test customize data
+		TreeParent invisibleRoot = new TreeParent("");
+		TreeParent root = new TreeParent("Root");
+		invisibleRoot.addChild(root);
+		viewer.setInput(invisibleRoot);
+		
+		Object obj = viewer.getInput();
+		System.out.println("here: " + (TreeParent)obj);
+		
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "bookmark.viewer");
@@ -387,17 +391,7 @@ public class BookmarkView extends ViewPart {
 		// add directory and leaf action
 		action3 = new Action() {
 			public void run() {
-				ViewContentProvider viewContentProvider = (ViewContentProvider)viewer.getContentProvider();
-				TreeParent invisibleRoot = viewContentProvider.getInvisibleRoot();
-				TreeObject child = new TreeObject("new node");
-				
-				TreeParent parent = new TreeParent("new parent");
-				
-				invisibleRoot.addChild(child);
-				invisibleRoot.addChild(parent);
-				
-				viewContentProvider.setInvisibleRoot(invisibleRoot);
-				viewer.setContentProvider(viewContentProvider);
+				System.out.println("empty");
 			}
 		};
 		action3.setText("Action 3");
@@ -463,15 +457,10 @@ public class BookmarkView extends ViewPart {
 					}
 					
 					// create leaf with file info
-					ViewContentProvider viewContentProvider = (ViewContentProvider)viewer.getContentProvider();
-					TreeParent invisibleRoot = viewContentProvider.getInvisibleRoot();
+					TreeParent invisibleRoot = (TreeParent)viewer.getInput();
 					TreeObject child = new TreeObject(relativePath);	
-					
-					
 					invisibleRoot.addChild(child);
-					
-					viewContentProvider.setInvisibleRoot(invisibleRoot);
-					viewer.setContentProvider(viewContentProvider);
+					viewer.setInput(invisibleRoot);
 				}
 			}
 		};
@@ -488,6 +477,10 @@ public class BookmarkView extends ViewPart {
 				//showMessage("Double-click detected on "+obj.toString());
 				if (obj != null) {
 					TreeObject treeObject = (TreeObject)obj;
+					if (treeObject.flag == 1) {
+						showMessage("Please select a bookmark.");
+						return ;
+					}
 					String relativePath = treeObject.getName();
                     IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
                     IProject project = workspaceRoot.getProject("test"); 
