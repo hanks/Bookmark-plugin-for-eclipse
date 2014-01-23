@@ -353,7 +353,7 @@ public class BookmarkView extends ViewPart {
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, 
             dragAdapter.getTransfers(), dragAdapter);
 	}
-
+	
 	private void hookContextMenu() {
 		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
@@ -523,11 +523,16 @@ public class BookmarkView extends ViewPart {
 			public void run() {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				//showMessage("Double-click detected on "+obj.toString());
+				
 				if (obj != null) {
 					TreeObject treeObject = (TreeObject)obj;
 					if (treeObject.flag == 1) {
-						showMessage("Please select a bookmark.");
+						// expand and collapse folder when double click 
+						if (viewer.getExpandedState(treeObject)) {
+							viewer.collapseToLevel(treeObject, 1);
+						} else {
+							viewer.expandToLevel(treeObject, 1);
+						}
 						return ;
 					}
 					String relativePath = treeObject.getName();
@@ -555,6 +560,7 @@ public class BookmarkView extends ViewPart {
 			}
 		});
 	}
+	
 	private void showMessage(String message) {
 		MessageDialog.openInformation(
 			viewer.getControl().getShell(),
