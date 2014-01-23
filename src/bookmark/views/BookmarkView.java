@@ -22,11 +22,16 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.core.resources.IFile; 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
+
+import com.google.gson.Gson;
 
 /**
  * This sample class demonstrates how to plug-in a new
@@ -52,6 +57,7 @@ public class BookmarkView extends ViewPart {
 	 * The ID of the view as specified by the extension.
 	 */
 	public static final String ID = "bookmark.views.BookmarkView";
+	public static final String DATA_STORE_KEY = "bookmark_datasource";
 	public static final int PARENT = 1;
 	public static final int CHILD = 0;
 
@@ -293,24 +299,12 @@ public class BookmarkView extends ViewPart {
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
-		//viewer.setInput(getViewSite());
-		// test customize data
-		TreeParent invisibleRoot = new TreeParent("");
-		TreeParent root = new TreeParent("Root");
-		TreeParent parent1 = new TreeParent("Parent1");
-		TreeParent parent2 = new TreeParent("Parent2");
-		TreeObject leaf1 = new TreeObject("leaf1");
-		TreeObject leaf2 = new TreeObject("leaf2");
-		parent1.addChild(leaf1);
-		parent2.addChild(leaf2);
-		root.addChild(parent1);
-		root.addChild(parent2);
-		invisibleRoot.addChild(root);
+
+		// get data from store or else do initialization
+		TreeParent invisibleRoot = this.loadPersistantData();
+
+		// set data source
 		viewer.setInput(invisibleRoot);
-		
-		Object obj = viewer.getInput();
-		System.out.println("here: " + (TreeParent)obj);
-		
 
 		// Create the help context id for the viewer's control
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "bookmark.viewer");
@@ -469,7 +463,7 @@ public class BookmarkView extends ViewPart {
 		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
-		// add directory and leaf action
+		// remove selected fold or leaf
 		action3 = new Action() {
 			public void run() {
 				// get invisibleRoot
@@ -489,10 +483,11 @@ public class BookmarkView extends ViewPart {
 					if (answer) {
 						invisibleRoot.removeSelectedChild(target);	
 					} 
+					// update data source
+					viewer.setInput(invisibleRoot);
+					// save to persistent
+					BookmarkView.savePersistantData(invisibleRoot);
 				}
-				
-				// update data source
-				viewer.setInput(invisibleRoot);
 			}
 		};
 		action3.setText("Action 3");
@@ -538,6 +533,9 @@ public class BookmarkView extends ViewPart {
 				
 				// add back to viewer
 				viewer.setInput(invisibleRoot);
+				
+				// save to persistent
+				BookmarkView.savePersistantData(invisibleRoot);
 			}
 		};
 		action4.setText("Action 4");
@@ -585,6 +583,9 @@ public class BookmarkView extends ViewPart {
 				
 				// update data source
 				viewer.setInput(invisibleRoot);
+				
+				// save to persistent
+				BookmarkView.savePersistantData(invisibleRoot);
 			}
 		};
 		action5.setText("Action 5");
@@ -641,5 +642,43 @@ public class BookmarkView extends ViewPart {
 	 */
 	public void setFocus() {
 		viewer.getControl().setFocus();
+	}
+	
+	/**
+	 * Use eclipse Preferences API to make data persistent
+	 * @param dataSource
+	 */
+	private static void savePersistantData(TreeParent dataSource) {
+		Preferences prefs = InstanceScope.INSTANCE
+				  .getNode(ID);
+		
+		// change object to string
+		Gson gson = new Gson();
+		String json_str = gson.toJson(dataSource);
+		
+		prefs.put(DATA_STORE_KEY, json_str);
+		try {
+			// store to disk
+			prefs.flush();
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private TreeParent loadPersistantData() {
+		Preferences prefs = InstanceScope.INSTANCE
+				  .getNode(ID);
+		
+		String json_str = prefs.get(DATA_STORE_KEY, "");
+		
+		if (json_str == "") {
+			// no data source yet, do initialization
+			TreeParent invisibleRoot = new TreeParent("");
+			return invisibleRoot;
+		} else {
+			Gson gson = new Gson();
+			TreeParent obj = gson.fromJson(json_str, TreeParent.class);
+			return obj;
+		}
 	}
 }
