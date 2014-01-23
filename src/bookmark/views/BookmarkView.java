@@ -243,12 +243,10 @@ public class BookmarkView extends ViewPart {
 	public static final String DATA_STORE_KEY = "bookmark_datasource";
 
 	private TreeViewer viewer;
-	private DrillDownAdapter drillDownAdapter;
-	private Action action1;
-	private Action action2;
-	private Action action3;
-	private Action action4;
-	private Action action5;
+	
+	private Action addFolderAction;
+	private Action addBookmarkAction;
+	private Action deleteAction;
 	private Action doubleClickAction;
 
 
@@ -286,7 +284,7 @@ public class BookmarkView extends ViewPart {
 			return obj.toString();
 		}
 		public Image getImage(Object obj) {
-			String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
+			String imageKey = ISharedImages.IMG_OBJS_BKMRK_TSK;
 			if (obj instanceof TreeParent)
 			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
 			return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
@@ -309,7 +307,6 @@ public class BookmarkView extends ViewPart {
 	 */
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		drillDownAdapter = new DrillDownAdapter(viewer);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setSorter(new NameSorter());
@@ -378,107 +375,23 @@ public class BookmarkView extends ViewPart {
 	}
 
 	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(action1);
-		manager.add(new Separator());
-		manager.add(action2);
+		
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
-		manager.add(action1);
-		manager.add(action2);
-		manager.add(new Separator());
-		drillDownAdapter.addNavigationActions(manager);
-		// Other plug-ins can contribute there actions here
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+		manager.add(this.addBookmarkAction);
+		manager.add(this.addFolderAction);
+		manager.add(this.deleteAction);
 	}
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
-		/**
-		 * add actions to tool bar
-		 */
-		manager.add(action1);
-		manager.add(action2);
-		manager.add(action3);
-		manager.add(action4);
-		manager.add(action5);
-		manager.add(new Separator());
-		drillDownAdapter.addNavigationActions(manager);
+	
 	}
 	
 	private void makeActions() {
-		// get active file info action
-		action1 = new Action() {
-			public void run() {
-				//showMessage("Action 1 executed");
-				System.out.println("Action 1 executed");
-				
-				// get the path of active editor file
-				IWorkbench wb = PlatformUI.getWorkbench();
-				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-				IWorkbenchPage page = window.getActivePage();
-				IEditorPart editor = page.getActiveEditor();
-				if (editor != null) {
-					IFileEditorInput input = (IFileEditorInput)editor.getEditorInput();
-					IFile file = input.getFile();
-					System.out.println("relative path: " + file.getProjectRelativePath());
-					
-					IPath path = ((FileEditorInput) input).getPath();
-					System.out.println("absolute path: " + path);
-					
-					System.out.println("project name: " + file.getProject().getName());
-				} else {
-					System.out.println("no active editor");
-				}
-			}
-		};
-		action1.setText("Action 1");
-		action1.setToolTipText("Action 1 tooltip");
-		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
-		// open file in editor action
-		action2 = new Action() {
-			public void run() {
-				//showMessage("Action 2 executed");
-				System.out.println("Action 2 executed");
-				//String absolutePath = "/Users/han.zhou/runtime-EclipseApplication/test/src/test.java";
-				String relativePath = "src/test.java";
-				IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-				IProject project = workspaceRoot.getProject("test");
-				
-				IFile file1 = project.getFile((new Path(relativePath))); 
-				//IFile file2 = workspaceRoot.getFileForLocation(Path.fromOSString(absolutePath)); 
-				
-				IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-				IWorkbenchPage page = window.getActivePage();
-				
-				// count editor id from file type
-				IEditorDescriptor desc = PlatformUI.getWorkbench().
-				        getEditorRegistry().getDefaultEditor(file1.getName());
-				try {
-					page.openEditor(new FileEditorInput(file1), desc.getId());
-					System.out.println("relative is ok");
-				} catch (PartInitException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-				
-//				try {
-//					page.openEditor(new FileEditorInput(file2), desc.getId());
-//					System.out.println("absolute is ok");
-//				} catch (PartInitException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} 
-			}
-		};
-		action2.setText("Action 2");
-		action2.setToolTipText("Action 2 tooltip");
-		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-		
-		// remove selected fold or leaf
-		action3 = new Action() {
+		// remove selected folder or bookmark
+		this.deleteAction = new Action() {
 			public void run() {
 				// get invisibleRoot
 				TreeParent invisibleRoot = (TreeParent)viewer.getInput();
@@ -504,13 +417,13 @@ public class BookmarkView extends ViewPart {
 				}
 			}
 		};
-		action3.setText("Action 3");
-		action3.setToolTipText("Action 3 tooltip");
-		action3.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		this.deleteAction.setText("Delete");
+		this.deleteAction.setToolTipText("Delete selected folder or bookmark.");
+		this.deleteAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_ETOOL_DELETE));
 		
 		// use user input to add parent 
-		action4 = new Action() {
+		this.addFolderAction = new Action() {
 			public void run() {
 				String parentName;
 			    // create an input dialog to get user input
@@ -527,7 +440,6 @@ public class BookmarkView extends ViewPart {
 			    	return ;
 			    } else {
 			    	parentName = dlg.getValue();
-			    	System.out.println(parentName);
 			    }
 			    
     		    // new a folder
@@ -552,13 +464,13 @@ public class BookmarkView extends ViewPart {
 				BookmarkView.savePersistantData(invisibleRoot);
 			}
 		};
-		action4.setText("Action 4");
-		action4.setToolTipText("Action 4 tooltip");
-		action4.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		this.addFolderAction.setText("Add folder here");
+		this.addFolderAction.setToolTipText("Add folder here");
+		this.addFolderAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_OBJ_FOLDER));
 		
 		// add book mark to selected parent
-		action5 = new Action() {
+		this.addBookmarkAction = new Action() {
 			public void run() {
 				//get active editor info
 				String relativePath = "";
@@ -602,10 +514,10 @@ public class BookmarkView extends ViewPart {
 				BookmarkView.savePersistantData(invisibleRoot);
 			}
 		};
-		action5.setText("Action 5");
-		action5.setToolTipText("Action 5 tooltip");
-		action5.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		this.addBookmarkAction.setText("Add bookmark here");
+		this.addBookmarkAction.setToolTipText("Add bookmark here");
+		this.addBookmarkAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+				getImageDescriptor(ISharedImages.IMG_OBJS_BKMRK_TSK));
 		
 		// double click action to open file
 		doubleClickAction = new Action() {
@@ -697,13 +609,6 @@ public class BookmarkView extends ViewPart {
 	private TreeParent loadPersistantData() {
 		Preferences prefs = InstanceScope.INSTANCE
 				  .getNode(ID);
-		
-//		try {
-//			prefs.clear();
-//		} catch (BackingStoreException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		
 		String json_str = prefs.get(DATA_STORE_KEY, "");
 		
