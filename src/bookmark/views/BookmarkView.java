@@ -8,11 +8,13 @@ import org.eclipse.ui.part.*;
 import org.eclipse.jface.util.DelegatingDragAdapter;
 import org.eclipse.jface.util.TransferDragSourceListener;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
@@ -148,6 +150,9 @@ public class BookmarkView extends ViewPart {
 		
 		/**
 		 * Return index path for object, almost to find parent index path
+		 * 
+		 * Use recursion way to add child, if child is leaf, to find his parent and add to its parent
+		 * 
 		 * @param obj
 		 * @param path
 		 */
@@ -427,21 +432,44 @@ public class BookmarkView extends ViewPart {
 		action3.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
 				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		
-		// add detect selection action
+		// use user input to add parent 
 		action4 = new Action() {
 			public void run() {
+				String parentName;
+			    // create an input dialog to get user input
+			    String title = "Input";
+			    String question = "Please enter folder name:";
+			    String initValue = "";
+			    InputDialog dlg = new InputDialog(null,
+			    		title,
+			    		question,
+			    		initValue,
+			    		null);
+			    dlg.open();
+			    if (dlg.getReturnCode() != Window.OK) {
+			    	return ;
+			    } else {
+			    	parentName = dlg.getValue();
+			    	System.out.println(parentName);
+			    }
+			    
+    		    // new a folder
+			    TreeParent newParent = new TreeParent(parentName);
+			    // get invisible root
+			    TreeParent invisibleRoot = (TreeParent)viewer.getInput();
+			    
+			    // get selection
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
 				if (obj == null) {
-					System.out.println("no selection");
+					// default to add to the invisibleRoot
+					invisibleRoot.addChild(newParent);
 				} else {
-				    TreeObject a = (TreeObject)obj;
-				    if (a.flag == 0) {
-				    	System.out.println("leaf: " + a.toString());
-				    } else {
-				    	System.out.println("parent: " + a.toString());
-				    }
+					invisibleRoot.addChild((TreeObject)obj, newParent);
 				}
+				
+				// add back to viewer
+				viewer.setInput(invisibleRoot);
 			}
 		};
 		action4.setText("Action 4");
