@@ -1,7 +1,6 @@
 package bookmark.views;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
@@ -79,14 +78,26 @@ public class BookmarkView extends ViewPart {
 		private String name;
 		private TreeParent parent;
 		protected int flag;
+		private String projectName;
 		
 		public TreeObject(String name) {
 			this.name = name;
 			this.flag = CHILD;
+			this.projectName = "";
+		}
+		
+		public TreeObject(String name, String projectName) {
+			this.name = name;
+			this.flag = CHILD;
+			this.projectName = projectName;
 		}
 		
 		public String getName() {
 			return name;
+		}
+		
+		public String getProjectName() {
+			return this.projectName;
 		}
 		
 		public void setParent(TreeParent parent) {
@@ -175,7 +186,12 @@ public class BookmarkView extends ViewPart {
 				} else if (children[i].flag == CHILD) {
 					if (children[i] == target) {
 						TreeParent parent = children[i].getParent();
-						parent.getParent().addChild(parent, child);
+						if (parent.getParent() != null) {
+							parent.getParent().addChild(parent, child);	
+						} else { // when it is invisibleRoot, so there is 
+							     // no parent, directly to add
+							parent.addChild(child);
+						}
 						return true;
 					} 
 				}
@@ -462,7 +478,7 @@ public class BookmarkView extends ViewPart {
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
 				if (obj == null) {
-					// default to add to the invisibleRoot
+					// no selection, default to add to the invisibleRoot
 					invisibleRoot.addChild(newParent);
 				} else {
 					invisibleRoot.addChild((TreeObject)obj, newParent);
@@ -480,38 +496,43 @@ public class BookmarkView extends ViewPart {
 		// add book mark to selected parent
 		action5 = new Action() {
 			public void run() {
+				//get active editor info
+				String relativePath = "";
+				String projectName = "";
+				
+				IWorkbench wb = PlatformUI.getWorkbench();
+				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+				IWorkbenchPage page = window.getActivePage();
+				IEditorPart editor = page.getActiveEditor();
+				if (editor != null) {
+					IFileEditorInput input = (IFileEditorInput)editor.getEditorInput();
+					IFile file = input.getFile();
+					relativePath = file.getProjectRelativePath().toOSString();
+					projectName = file.getProject().getName();
+				} else {
+					showMessage("no active editor");
+					return ;
+				}
+				
+				// create leaf with file info
+				TreeObject child = new TreeObject(relativePath, projectName);
+				
+				// get invisibleRoot
+				TreeParent invisibleRoot = (TreeParent)viewer.getInput();
+				
+				// get selection
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
 				if (obj == null) {
-					showMessage("Please select an bookmark folder.");
-					return ;
+					// default to insert invisibleRoot
+					invisibleRoot.addChild(child);
 				} else {
 					TreeObject targetParent = (TreeObject)obj;
-					
-					//get active editor info
-					String relativePath = "";
-					String projectName = "";
-					
-					IWorkbench wb = PlatformUI.getWorkbench();
-					IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-					IWorkbenchPage page = window.getActivePage();
-					IEditorPart editor = page.getActiveEditor();
-					if (editor != null) {
-						IFileEditorInput input = (IFileEditorInput)editor.getEditorInput();
-						IFile file = input.getFile();
-						relativePath = file.getProjectRelativePath().toOSString();
-						projectName = file.getProject().getName();
-					} else {
-						showMessage("no active editor");
-						return ;
-					}
-					
-					// create leaf with file info
-					TreeParent invisibleRoot = (TreeParent)viewer.getInput();
-					TreeObject child = new TreeObject(relativePath);
 					invisibleRoot.addChild(targetParent, child);
-					viewer.setInput(invisibleRoot);
 				}
+				
+				// update data source
+				viewer.setInput(invisibleRoot);
 			}
 		};
 		action5.setText("Action 5");
@@ -533,7 +554,7 @@ public class BookmarkView extends ViewPart {
 					}
 					String relativePath = treeObject.getName();
                     IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-                    IProject project = workspaceRoot.getProject("test"); 
+                    IProject project = workspaceRoot.getProject(treeObject.getProjectName()); 
                     IFile file1 = project.getFile((new Path(relativePath)));
                     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                     IWorkbenchPage page = window.getActivePage(); 
