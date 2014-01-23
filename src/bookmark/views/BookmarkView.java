@@ -1,6 +1,7 @@
 package bookmark.views;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
@@ -98,6 +99,17 @@ public class BookmarkView extends ViewPart {
 			return getName();
 		}
 		
+		/**
+		 * Override equals method to use name to compare two TreeObject
+		 */
+		public boolean equals(Object object) {
+			if ((object instanceof TreeObject) && ((TreeObject) object).getName() == this.getName()) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
 		public Object getAdapter(Class key) {
 			return null;
 		}
@@ -122,12 +134,48 @@ public class BookmarkView extends ViewPart {
 			child.setParent(null);
 		}
 		
+		/**
+		 * 
+		 * @return TreeObject list or TreeObject[] when no children
+		 */
 		public TreeObject [] getChildren() {
     		return (TreeObject [])children.toArray(new TreeObject[children.size()]);	
 		}
 		
 		public boolean hasChildren() {
 			return children.size()>0;
+		}
+		
+		/**
+		 * Return index path for object, almost to find parent index path
+		 * @param obj
+		 * @param path
+		 */
+		public boolean addChild(TreeObject target, TreeObject child) {
+			TreeObject[] children = this.getChildren();
+			for (int i = 0; i < children.length; i++) {
+				if (children[i].flag == PARENT) {
+					// if target is folder
+					if (target == children[i]) {
+						// insert child
+						((TreeParent)children[i]).addChild(child);
+						return true;
+					}
+					
+					boolean can_add = ((TreeParent)children[i]).addChild(target, child);
+					
+					if (can_add) {
+						return true;
+					} 
+				} else if (children[i].flag == CHILD) {
+					if (children[i] == target) {
+						TreeParent parent = children[i].getParent();
+						parent.getParent().addChild(parent, child);
+						return true;
+					} 
+				}
+			}
+			return false;
 		}
 	}
 
@@ -196,6 +244,14 @@ public class BookmarkView extends ViewPart {
 		// test customize data
 		TreeParent invisibleRoot = new TreeParent("");
 		TreeParent root = new TreeParent("Root");
+		TreeParent parent1 = new TreeParent("Parent1");
+		TreeParent parent2 = new TreeParent("Parent2");
+		TreeObject leaf1 = new TreeObject("leaf1");
+		TreeObject leaf2 = new TreeObject("leaf2");
+		parent1.addChild(leaf1);
+		parent2.addChild(leaf2);
+		root.addChild(parent1);
+		root.addChild(parent2);
 		invisibleRoot.addChild(root);
 		viewer.setInput(invisibleRoot);
 		
@@ -402,15 +458,7 @@ public class BookmarkView extends ViewPart {
 					showMessage("Please select an bookmark folder.");
 					return ;
 				} else {
-					TreeObject treeObject = (TreeObject)obj;
-					String nodeName = "";
-					if (treeObject.flag == 0) {
-						// child
-						nodeName = treeObject.getParent().getName();
-					} else {
-						// parent
-						nodeName = treeObject.getName();
-					}
+					TreeObject targetParent = (TreeObject)obj;
 					
 					//get active editor info
 					String relativePath = "";
@@ -432,8 +480,8 @@ public class BookmarkView extends ViewPart {
 					
 					// create leaf with file info
 					TreeParent invisibleRoot = (TreeParent)viewer.getInput();
-					TreeObject child = new TreeObject(relativePath);	
-					invisibleRoot.addChild(child);
+					TreeObject child = new TreeObject(relativePath);
+					invisibleRoot.addChild(targetParent, child);
 					viewer.setInput(invisibleRoot);
 				}
 			}
