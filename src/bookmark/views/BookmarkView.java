@@ -324,36 +324,6 @@ public class BookmarkView extends ViewPart {
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
-		
-		// add drop feature in tree 
-		DelegatingDragAdapter dragAdapter = new DelegatingDragAdapter();
-        dragAdapter.addDragSourceListener(new TransferDragSourceListener() {
-			@Override
-			public void dragStart(DragSourceEvent event) {
-				// TODO Auto-generated method stub
-				System.out.println("Drag start");
-			}
-
-			@Override
-			public void dragSetData(DragSourceEvent event) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void dragFinished(DragSourceEvent event) {
-				// TODO Auto-generated method stub
-				System.out.println("Drag end");
-			}
-
-			@Override
-			public Transfer getTransfer() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-        });
-        viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, 
-            dragAdapter.getTransfers(), dragAdapter);
 	}
 	
 	private void hookContextMenu() {
