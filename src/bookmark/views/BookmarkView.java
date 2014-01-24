@@ -413,8 +413,16 @@ public class BookmarkView extends ViewPart {
 					if (answer) {
 						invisibleRoot.removeSelectedChild(target);	
 					} 
+					// keep expand situation
+					Object[] expandedElements = viewer.getExpandedElements();
+					TreePath[] expandedTreePaths = viewer.getExpandedTreePaths();
+					
 					// update data source
 					viewer.setInput(invisibleRoot);
+					
+					viewer.setExpandedElements(expandedElements);
+					viewer.setExpandedTreePaths(expandedTreePaths);
+					
 					// save to persistent
 					BookmarkView.savePersistantData(invisibleRoot);
 				}
@@ -460,8 +468,16 @@ public class BookmarkView extends ViewPart {
 					invisibleRoot.addChild((TreeObject)obj, newParent);
 				}
 				
-				// add back to viewer
+				// keep expand situation
+				Object[] expandedElements = viewer.getExpandedElements();
+				TreePath[] expandedTreePaths = viewer.getExpandedTreePaths();
+				
+				// update data source
 				viewer.setInput(invisibleRoot);
+				
+				viewer.setExpandedElements(expandedElements);
+				viewer.setExpandedTreePaths(expandedTreePaths);
+				
 				
 				// save to persistent
 				BookmarkView.savePersistantData(invisibleRoot);
@@ -532,8 +548,15 @@ public class BookmarkView extends ViewPart {
 					invisibleRoot.addChild(targetParent, child);
 				}
 				
+				// keep expand situation
+				Object[] expandedElements = viewer.getExpandedElements();
+				TreePath[] expandedTreePaths = viewer.getExpandedTreePaths();
+				
 				// update data source
 				viewer.setInput(invisibleRoot);
+				
+				viewer.setExpandedElements(expandedElements);
+				viewer.setExpandedTreePaths(expandedTreePaths);
 				
 				// save to persistent
 				BookmarkView.savePersistantData(invisibleRoot);
