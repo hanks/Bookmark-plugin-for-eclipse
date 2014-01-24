@@ -285,7 +285,7 @@ public class BookmarkView extends ViewPart {
 			return obj.toString();
 		}
 		public Image getImage(Object obj) {
-			String imageKey = ISharedImages.IMG_OBJS_BKMRK_TSK;
+			String imageKey = ISharedImages.IMG_OBJ_FILE;
 			if (obj instanceof TreeParent)
 			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
 			return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
@@ -386,7 +386,9 @@ public class BookmarkView extends ViewPart {
 	}
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
-	
+		manager.add(this.addBookmarkAction);
+		manager.add(this.addFolderAction);
+		manager.add(this.deleteAction);
 	}
 	
 	private void makeActions() {
