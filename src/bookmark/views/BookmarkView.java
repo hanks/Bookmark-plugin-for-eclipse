@@ -171,12 +171,7 @@ class TreeParent extends TreeObject {
 			} else if (children[i].flag == CHILD) {
 				if (children[i] == target) {
 					TreeParent parent = children[i].getParent();
-					if (parent.getParent() != null) {
-						parent.getParent().addChild(parent, child);	
-					} else { // when it is invisibleRoot, so there is 
-						     // no parent, directly to add
-						parent.addChild(child);
-					}
+					parent.addChild(child);
 					return true;
 				} 
 			}
