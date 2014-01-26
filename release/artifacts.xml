@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<?artifactRepository version='1.1.0'?>
-<repository name='bookmark-repository' type='org.eclipse.equinox.p2.artifact.repository.simpleRepository' version='1'>
-	<mappings size="1">
-	    <rule filter='(& (classifier=osgi.bundle))' output='${repoUrl}/${id}_${version}.jar'/>
-	</mappings>
-</repository> 
