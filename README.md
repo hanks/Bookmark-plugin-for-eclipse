@@ -12,8 +12,23 @@ is a tableview, that can not manage more and more bookmarks by folder, so for
 the folder, the plugin is created....
 
 ## Install
-1. Put *.jar file in release folder to your eclipse plugin folder, and restart eclipse. 
-2. Then select from Window->Show View->Other... to search Bookmark View
+There are two ways to install this plugin.
+
+<ol>
+  <li>From local</li>
+    <ol>
+      <li>Download and *.jar file in release folder to your eclipse plugin folder, and restart eclipse.</li>
+      <li>Then select from Window->Show View->Other... to search Bookmark View</li>
+    </ol>
+  <li>From update site      
+    <ol>
+      <li>Select Help->Install New Software...</li>
+      <li>Input <a>https://github.com/hanks/Bookmark-plugin-update-site/raw/master/</a> and press Add to install.
+  </li>
+    </ol>
+  </li>                
+</ol>
+
 
 ## Demo
 ![alt text][demo]
