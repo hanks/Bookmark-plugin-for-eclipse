@@ -556,12 +556,17 @@ public class BookmarkView extends ViewPart {
                     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                     IWorkbenchPage page = window.getActivePage(); 
                     IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file1.getName());
-
-					try {
-					    page.openEditor(new FileEditorInput(file1), desc.getId()); 
-					} catch (PartInitException e) {
-					  e.printStackTrace();
-					}
+                    
+                    // if no right editor to find, use default text editor
+                    try {
+                    	if (desc == null) {
+                    		page.openEditor(new FileEditorInput(file1), "org.eclipse.ui.DefaultTextEditor"); 
+                        } else {
+                        	page.openEditor(new FileEditorInput(file1), desc.getId()); 
+    					}	
+                    } catch (PartInitException e) {
+                    	e.printStackTrace();
+                    }
 				}
 			}
 		};
