@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Bookmark
 Bundle-SymbolicName: bookmark; singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.1.qualifier
 Bundle-Activator: bookmark.Activator
 Bundle-Vendor: hanks
 Require-Bundle: org.eclipse.ui,
