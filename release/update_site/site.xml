@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="A treeview bookmark plugin update site" url="https://github.com/hanks/Bookmark-plugin-update-site/raw/master/">
+      A treeview bookmark plugin update site
+   </description>
+   <feature url="features/BookmarkFeature_1.0.1.201401272243.jar" id="BookmarkFeature" version="1.0.1.201401272243"/>
+</site>
