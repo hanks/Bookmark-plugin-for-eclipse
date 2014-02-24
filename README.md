@@ -13,6 +13,11 @@ We know that during a job in a big project, you only need to modify a few relate
 is a tableview, that can not manage more and more bookmarks by folder, so for
 the folder, the plugin is created....
 
+## Demo
+![alt text][demo]
+
+[demo]: https://raw2.github.com/hanks/Bookmark-plugin-for-eclipse/master/resources/demo.gif "demo"
+
 ## Install
 There are two ways to install this plugin.
 
@@ -30,13 +35,6 @@ There are two ways to install this plugin.
     </ol>
   </li>                
 </ol>
-
-
-## Demo
-![alt text][demo]
-
-[demo]: https://raw2.github.com/hanks/Bookmark-plugin-for-eclipse/master/resources/demo.gif "demo"
-
 
 ## Todo
 1. rename
