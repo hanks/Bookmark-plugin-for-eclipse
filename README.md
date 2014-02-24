@@ -3,6 +3,8 @@ Bookmark-plugin-for-eclipse
 
 A simple treeview version bookmark plugin for eclipse
 
+**use github to host my bookmark plugin for online eclipse marketplace**
+
 ## What
 It is a simple bookmark tools to manage your favorite edited files together.
 
@@ -23,7 +25,7 @@ There are two ways to install this plugin.
   <li>From update site      
     <ol>
       <li>Select Help->Install New Software...</li>
-      <li>Input <a>https://github.com/hanks/Bookmark-plugin-update-site/raw/master/</a> and press Add to install.
+      <li>Input <a>https://raw2.github.com/hanks/Bookmark-plugin-for-eclipse/master/release/update_site/</a> and press Add to install.
   </li>
     </ol>
   </li>                
