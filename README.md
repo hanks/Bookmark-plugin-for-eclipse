@@ -16,7 +16,7 @@ the folder, the plugin is created....
 ## Demo
 ![alt text][demo]
 
-[demo]: https://raw2.github.com/hanks/Bookmark-plugin-for-eclipse/master/resources/demo.gif "demo"
+[demo]: https://raw.githubusercontent.com/hanks/Bookmark-plugin-for-eclipse/master/resources/demo.gif "demo"
 
 ## Install
 There are two ways to install this plugin.
