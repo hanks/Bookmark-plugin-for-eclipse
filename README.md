@@ -30,7 +30,7 @@ There are two ways to install this plugin.
   <li>From update site      
     <ol>
       <li>Select Help->Install New Software...</li>
-      <li>Input <a>https://raw2.github.com/hanks/Bookmark-plugin-for-eclipse/master/release/update_site/</a> and press Add to install.
+      <li>Input <a>https://raw.githubusercontent.com/hanks/Bookmark-plugin-for-eclipse/master/release/update_site/</a> and press Add to install.
   </li>
     </ol>
   </li>                
