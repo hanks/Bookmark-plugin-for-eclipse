@@ -42,6 +42,7 @@ There are two ways to install this plugin.
 * drag and drop action
 * cloud store? This is too big
 * i18n
+* Open the bookmark located in the history position.
 
 ## Contribution
 **Waiting for your pull request**

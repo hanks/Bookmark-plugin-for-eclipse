@@ -328,7 +328,18 @@ public class BookmarkView extends ViewPart {
 		menuMgr.setRemoveAllWhenShown(true);
 		menuMgr.addMenuListener(new IMenuListener() {
 			public void menuAboutToShow(IMenuManager manager) {
-				BookmarkView.this.fillContextMenu(manager);
+
+				IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+				if (!selection.isEmpty()) {
+					TreeObject target = (TreeObject) selection.getFirstElement();
+					if (target instanceof TreeParent) {
+						manager.add(addBookmarkAction);
+						manager.add(addFolderAction);
+						manager.add(deleteAction);
+					} else {
+						manager.add(deleteAction);
+					}
+				}
 			}
 		});
 		Menu menu = menuMgr.createContextMenu(viewer.getControl());
@@ -344,12 +355,6 @@ public class BookmarkView extends ViewPart {
 
 	private void fillLocalPullDown(IMenuManager manager) {
 
-	}
-
-	private void fillContextMenu(IMenuManager manager) {
-		manager.add(this.addBookmarkAction);
-		manager.add(this.addFolderAction);
-		manager.add(this.deleteAction);
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
