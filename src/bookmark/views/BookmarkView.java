@@ -1,15 +1,12 @@
 package bookmark.views;
 
 import java.util.ArrayList;
-import java.util.regex.PatternSyntaxException;
-
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.*;
@@ -31,6 +28,7 @@ import org.osgi.service.prefs.Preferences;
 import com.google.gson.Gson;
 
 import bookmark.constant.Constant;
+import bookmark.utils.ValidationUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,6 +69,10 @@ class TreeObject implements IAdaptable, Serializable {
 
 	public String getName() {
 		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getProjectName() {
@@ -239,6 +241,7 @@ public class BookmarkView extends ViewPart {
 	private Action addFolderAction;
 	private Action addBookmarkAction;
 	private Action deleteAction;
+	private Action renameAction;
 	private Action doubleClickAction;
 
 	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider {
@@ -336,6 +339,7 @@ public class BookmarkView extends ViewPart {
 						manager.add(addBookmarkAction);
 						manager.add(addFolderAction);
 						manager.add(deleteAction);
+						manager.add(renameAction);
 					} else {
 						manager.add(deleteAction);
 					}
@@ -413,24 +417,8 @@ public class BookmarkView extends ViewPart {
 				String dialogTitle = "Input";
 				String dialogMessage = "Please enter folder name:";
 				String initialValue = "";
-				IInputValidator validator = new IInputValidator() {
-
-					@Override
-					public String isValid(String input) {
-						try {
-							if (input.matches("(?s)[0-9a-zA-Z]+")) {
-								return null;
-							} else {
-								return "Invalid file name";
-							}
-						} catch (PatternSyntaxException ex) {
-							// Syntax error in the regular expression
-						}
-						return "There occure an error in the bookmark plugin,report it to the author.";
-					}
-
-				};
-				InputDialog dlg = new InputDialog(null, dialogTitle, dialogMessage, initialValue, validator);
+				InputDialog dlg = new InputDialog(null, dialogTitle, dialogMessage, initialValue,
+						ValidationUtils.getIInputValidatorInstance());
 				dlg.open();
 				if (dlg.getReturnCode() != Window.OK) {
 					return;
@@ -550,6 +538,43 @@ public class BookmarkView extends ViewPart {
 		this.addBookmarkAction.setToolTipText("Add bookmark here");
 		this.addBookmarkAction.setImageDescriptor(
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_BKMRK_TSK));
+
+		// rename the node
+		renameAction = new Action() {
+			public void run() {
+
+				String parentName;
+				// create an input dialog to get user input
+				String dialogTitle = "Input";
+				String dialogMessage = "Please enter folder name:";
+				String initialValue = "";
+				InputDialog dlg = new InputDialog(null, dialogTitle, dialogMessage, initialValue,
+						ValidationUtils.getIInputValidatorInstance());
+				dlg.open();
+				if (dlg.getReturnCode() != Window.OK) {
+					return;
+				} else {
+					parentName = dlg.getValue();
+				}
+
+				ISelection selection = viewer.getSelection();
+				Object obj = ((IStructuredSelection) selection).getFirstElement();
+
+				if (obj != null) {
+					TreeObject treeObject = (TreeObject) obj;
+					if (treeObject.flag == Constant.PARENT) {
+						treeObject.setName(parentName);
+					}
+				}
+
+				TreeParent invisibleRoot = (TreeParent) viewer.getInput();
+				viewer.setInput(invisibleRoot);
+				BookmarkView.savePersistantData(invisibleRoot);
+			}
+		};
+
+		this.renameAction.setText("Rename");
+		this.renameAction.setToolTipText("Rename the folder.");
 
 		// double click action to open file
 		doubleClickAction = new Action() {

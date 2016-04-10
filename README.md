@@ -37,7 +37,7 @@ There are two ways to install this plugin.
 </ol>
 
 ## Todo
-* rename
+
 * short name label
 * drag and drop action
 * cloud store? This is too big
