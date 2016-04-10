@@ -1,6 +1,11 @@
 Bookmark-plugin-for-eclipse
 ===========================
 
+## Contributor:
+
+* hanks zhouhan315@gmail.com
+* Aloys jiangxinnju@163.com
+
 A simple treeview version bookmark plugin for eclipse
 
 **use github to host my bookmark plugin for online eclipse marketplace**
@@ -43,6 +48,8 @@ There are two ways to install this plugin.
 * cloud store? This is too big
 * i18n
 * Open the bookmark located in the history position.
+* Add all the open files into bookmark at once.
+* Open all the files under the folder.
 
 ## Contribution
 **Waiting for your pull request**
