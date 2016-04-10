@@ -343,6 +343,9 @@ public class BookmarkView extends ViewPart {
 					} else {
 						manager.add(deleteAction);
 					}
+				} else {
+					manager.add(addBookmarkAction);
+					manager.add(addFolderAction);
 				}
 			}
 		});
