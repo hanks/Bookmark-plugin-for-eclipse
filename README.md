@@ -27,21 +27,21 @@ There are two ways to install this plugin.
       <li>Download and *.jar file in release folder to your eclipse plugin folder, and restart eclipse.</li>
       <li>Then select from Window->Show View->Other... to search Bookmark View</li>
     </ol>
-  <li>From update site      
+  <li>From update site
     <ol>
       <li>Select Help->Install New Software...</li>
       <li>Input <a>https://raw.githubusercontent.com/hanks/Bookmark-plugin-for-eclipse/master/release/update_site/</a> and press Add to install.
   </li>
     </ol>
-  </li>                
+  </li>
 </ol>
 
 ## Todo
-1. rename
-2. short name label
-2. drag and drop action
-3. cloud store? This is too big
-4. and so on
+* rename
+* short name label
+* drag and drop action
+* cloud store? This is too big
+* i18n
 
 ## Contribution
 **Waiting for your pull request**
