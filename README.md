@@ -61,7 +61,6 @@ There are two ways to install this plugin.
 * 增加注释功能，允许加入文字说明，鼠标悬停时显示注释
 * 导入导出功能
 * 搜索，过滤功能
-* 修改view视图名称
 
 
 ## Contribution

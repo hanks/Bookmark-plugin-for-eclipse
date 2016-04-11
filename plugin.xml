@@ -5,15 +5,15 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Bookmark Category"
+            name="Bookmark"
             id="bookmark">
       </category>
       <view
-            name="Bookmark View"
+            name="Bookmark"
             icon="icons/sample.gif"
             category="bookmark"
             class="bookmark.views.BookmarkView"
-            id="bookmark.views.BookmarkView">
+            id="bookmark.views.Bookmark">
       </view>
    </extension>
    <extension
