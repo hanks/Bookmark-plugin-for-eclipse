@@ -369,26 +369,26 @@ public class BookmarkView extends ViewPart {
 		renameAction = new Action() {
 			public void run() {
 
-				String parentName;
-				// create an input dialog to get user input
-				String dialogTitle = "Input";
-				String dialogMessage = "Please enter folder name:";
-				String initialValue = "";
-				InputDialog dlg = new InputDialog(null, dialogTitle, dialogMessage, initialValue,
-						ValidationUtils.getIInputValidatorInstance());
-				dlg.open();
-				if (dlg.getReturnCode() != Window.OK) {
-					return;
-				} else {
-					parentName = dlg.getValue();
-				}
-
 				ISelection selection = viewer.getSelection();
 				Object obj = ((IStructuredSelection) selection).getFirstElement();
 
 				if (obj != null) {
 					TreeObject treeObject = (TreeObject) obj;
 					if (treeObject.flag == Constant.PARENT) {
+
+						String parentName = treeObject.getName();
+						// create an input dialog to get user input
+						String dialogTitle = "Input";
+						String dialogMessage = "Please enter folder name:";
+						InputDialog dlg = new InputDialog(null, dialogTitle, dialogMessage, parentName,
+								ValidationUtils.getIInputValidatorInstance());
+						dlg.open();
+						if (dlg.getReturnCode() != Window.OK) {
+							return;
+						} else {
+							parentName = dlg.getValue();
+						}
+
 						treeObject.setName(parentName);
 					}
 				}
