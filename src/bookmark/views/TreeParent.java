@@ -13,7 +13,7 @@ import bookmark.constant.Constant;
  * it and always show the same content
  * (like Task List, for example).
  */
-class TreeParent extends TreeObject {
+public class TreeParent extends TreeObject {
 
 	/**
 	 *

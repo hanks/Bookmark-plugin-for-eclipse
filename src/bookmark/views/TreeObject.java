@@ -15,7 +15,7 @@ import bookmark.constant.Constant;
  * it and always show the same content
  * (like Task List, for example).
  */
-class TreeObject implements IAdaptable, Serializable {
+public class TreeObject implements IAdaptable, Serializable {
 	private static final long serialVersionUID = -4275221961856278045L;
 	private String name;
 	private TreeParent parent;

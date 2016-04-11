@@ -36,8 +36,6 @@ import java.io.ObjectOutputStream;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 
-
-
 /**
  * This sample class demonstrates how to plug-in a new workbench view. The view
  * shows data obtained from the model. The sample creates a dummy model on the
