@@ -50,6 +50,19 @@ There are two ways to install this plugin.
 * Open the bookmark located in the history position.
 * Add all the open files into bookmark at once.
 * Open all the files under the folder.
+* 存入非folder/file信息，比如包，断点等
+* 文件名支持中文，空格等字符
+* 支持folder右键展开所有子folder
+* 删除toolbar中无用图标
+* 增加排序功能，比如按照时间排序，按照字母序排序
+* 每个书签后面添加区域数目，可以保存一个文件的多个区域
+* 优化图标，保持和package explore一致
+* 同一个folder不允许出现同名文件
+* 增加注释功能，允许加入文字说明，鼠标悬停时显示注释
+* 导入导出功能
+* 搜索，过滤功能
+* 修改view视图名称
+
 
 ## Contribution
 **Waiting for your pull request**
