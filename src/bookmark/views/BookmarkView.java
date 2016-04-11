@@ -63,6 +63,7 @@ public class BookmarkView extends ViewPart {
 
 	private Action addFolderAction;
 	private Action addBookmarkAction;
+	private Action addAllBookmarkAction;
 	private Action deleteAction;
 	private Action renameAction;
 	private Action doubleClickAction;
@@ -163,12 +164,14 @@ public class BookmarkView extends ViewPart {
 						manager.add(addFolderAction);
 						manager.add(deleteAction);
 						manager.add(renameAction);
+						manager.add(addAllBookmarkAction);
 					} else {
 						manager.add(deleteAction);
 					}
 				} else {
 					manager.add(addBookmarkAction);
 					manager.add(addFolderAction);
+					manager.add(addAllBookmarkAction);
 				}
 			}
 		});
@@ -193,6 +196,7 @@ public class BookmarkView extends ViewPart {
 		manager.add(this.deleteAction);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void makeActions() {
 
 		// remove selected folder or bookmark
@@ -363,6 +367,67 @@ public class BookmarkView extends ViewPart {
 		this.addBookmarkAction.setText("Add bookmark here");
 		this.addBookmarkAction.setToolTipText("Add bookmark here");
 		this.addBookmarkAction.setImageDescriptor(
+				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_BKMRK_TSK));
+
+		addAllBookmarkAction = new Action() {
+			public void run() {
+				// get active editor info
+				String relativePath = "";
+				String projectName = "";
+
+				IWorkbench wb = PlatformUI.getWorkbench();
+				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+				IWorkbenchPage page = window.getActivePage();
+				IEditorPart[] editors = page.getEditors();
+				if (editors != null) {
+					for (int i = 0; i < editors.length; i++) {
+						IEditorPart editor = editors[i];
+
+						IFileEditorInput input = (IFileEditorInput) editor.getEditorInput();
+						IFile file = input.getFile();
+						relativePath = file.getProjectRelativePath().toOSString();
+						projectName = file.getProject().getName();
+
+						// create leaf with file info
+						TreeObject child = new TreeObject(relativePath, projectName);
+
+						// get invisibleRoot
+						TreeParent invisibleRoot = (TreeParent) viewer.getInput();
+
+						// get selection
+						ISelection selection = viewer.getSelection();
+						Object obj = ((IStructuredSelection) selection).getFirstElement();
+						if (obj == null) {
+							// default to insert invisibleRoot
+							invisibleRoot.addChild(child);
+						} else {
+							TreeObject targetParent = (TreeObject) obj;
+							invisibleRoot.addChild(targetParent, child);
+						}
+
+						// keep expand situation
+						Object[] expandedElements = viewer.getExpandedElements();
+						TreePath[] expandedTreePaths = viewer.getExpandedTreePaths();
+
+						// update data source
+						viewer.setInput(invisibleRoot);
+
+						viewer.setExpandedElements(expandedElements);
+						viewer.setExpandedTreePaths(expandedTreePaths);
+
+						// save to persistent
+						BookmarkView.savePersistantData(invisibleRoot);
+					}
+				} else {
+					showMessage("No active editor");
+					return;
+				}
+
+			}
+		};
+		this.addAllBookmarkAction.setText("Add opened files here");
+		this.addAllBookmarkAction.setToolTipText("Add opened files here");
+		this.addAllBookmarkAction.setImageDescriptor(
 				PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_BKMRK_TSK));
 
 		// rename the node

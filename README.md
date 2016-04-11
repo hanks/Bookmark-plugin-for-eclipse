@@ -48,7 +48,6 @@ There are two ways to install this plugin.
 * cloud store? This is too big
 * i18n
 * Open the bookmark located in the history position.
-* Add all the open files into bookmark at once.
 * Open all the files under the folder.
 * 存入非folder/file信息，比如包，断点等
 * 支持folder右键展开所有子folder
