@@ -12,7 +12,7 @@ public class ValidationUtils {
 			@Override
 			public String isValid(String input) {
 				try {
-					if (input.matches("(?s)[0-9a-zA-Z]+")) {
+					if (input.matches("(?s)[^\\\\/:*?\"<>|\\x00-\\x1F]+$")) {
 						return null;
 					} else {
 						return "Invalid file name";
